@@ -1,5 +1,4 @@
-<!DOCTYPE html><!--  This site was created in Webflow. https://www.webflow.com  -->
-<!--  Last Published: Sat Sep 23 2023 08:03:32 GMT+0000 (Coordinated Universal Time)  -->
+<!DOCTYPE html>
 <html data-wf-page="63d4aa1e6aee2601072a9d7a" data-wf-site="627b2651519efcbc7a337fdc">
 <head>
   <meta charset="utf-8">
@@ -13,157 +12,8 @@
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.5.0/lib/p5.js"></script>
-  <script>
-let bug; // Declare object
-var sizeSpeed = 0.3;
-var baseMoveSpeed = 0.5;
-var moveSpeed = 0.5;
-var numColors = 5;
-var baseColorSpeed = 0.005;
-var colorSpeed = 0.005;
-var edgeOffset;
-var widthPossible;
-var counter = 0;
-var cnv;
-var scrollingSpeed;
-var scrollMultiplier = 0.5;
-var colorMultiplier = 0.0025;
-var weightedSizes = [
-      { value: 250, weight: 1 },
-      { value: 300, weight: 2 },
-      { value: 400, weight: 3 },
-      { value: 500, weight: 2 },
-      { value: 600, weight: 1 }
-    ];
-var numCircles = 10;
-var bugs = [];
-var colors = [];
-// Define function used to find weights.
-function chooseWeighted(opts) {
-  // get sum of all the weights.
-  var sum = 0;
-  for(var j = 0; j < opts.length; j++) {
-   sum += opts[j].weight 
-  }
-  // now pick a random number between 0 and the sum of the weights
-  var ran = random(sum);
-  // loop through all the options until you find a weight that is greater
-  // or equal to the random number. Subtract weight from random num every time.
-  for( var i = 0; i < opts.length; i++){
-    var opt = opts[i];
-    if(opt.weight >= ran) {
-      return opt.value;
-    }
-    ran -= opt.weight;
-  }
-}
-function setup() {
-  cnv = createCanvas(windowWidth * 1.4, windowHeight);
-  cnv.parent("p5canvaswrap");
-  cnv.style('display', 'block');
-  cnv.style('pointer-events', 'none');
-  cnv.style('position', 'fixed');
-  cnv.style('left', windowWidth * -0.2 + 'px');
-  cnv.style('top', '0');
-  cnv.style('z-index', '-15');
-  cnv.style('filter', 'blur(11em)');
-  background("#0E0D0E");
-  noStroke();
-  colors.length = numColors + 1;
-  colors[0] = color('#223D99');
-  colors[1] = color('#4DA2D2');
-  colors[2] = color('#8036BB');
-  colors[3] = color('#6036BB');
-  colors[4] = color('#1EC1AE');
-  colors[5] = color('#20339B');
-  for(var i = 0; i < numCircles; i++) {
-    bugs.push(new Colorer());
-    counter++;
-  }
-  widthPossible = windowWidth * 1.4 * 0.15;
-  edgeOffset = windowWidth * 1.4 * 0.07;
-}
-function draw() {
-  background("#0E0D0E");
-  for(const i in bugs) {
-    bugs[i].move();
-    bugs[i].display();
-  }
-  var temp = baseMoveSpeed + (scrollingSpeed * scrollMultiplier);
-  var temp2 = baseColorSpeed + (scrollingSpeed * colorMultiplier);
-  moveSpeed = temp ? temp : baseMoveSpeed;
-  colorSpeed = temp2 ? temp2 : baseColorSpeed;
-  console.log(moveSpeed);
-}
-function windowResized() {
-  resizeCanvas(windowWidth * 1.4, windowHeight);
-  widthPossible = windowWidth * 1.4 * 0.15;
-  edgeOffset = windowWidth * 1.4 * 0.07;
-}
-function getRandom(min, max) {
- 	return Math.floor(Math.random() * (max - min) ) + min;
-}
-// Jitter class
-class Colorer {
-  constructor() {
-    this.targetSize = chooseWeighted(weightedSizes);
-    this.currColor = random(1, 3);
-    this.y = random(height);
-    this.diameter = chooseWeighted(weightedSizes);
-    this.location = counter;
-    this.x = this.location < 5 ? 0 : windowWidth * 1.4;
-    console.log(this.x);
-    this.targetX = this.x + 5;
-    this.targetY = random(height);
-  }
-  move() {
-    this.diameter += this.diameter > this.targetSize ? -sizeSpeed : sizeSpeed;
-    if(this.currColor + colorSpeed >= numColors) {
-      this.currColor = 0;
-    }
-    this.currColor += colorSpeed;
-    if(Math.abs(this.diameter - this.targetSize) < sizeSpeed) {
-      this.targetSize = chooseWeighted(weightedSizes);
-    }
-    this.x += this.x > this.targetX ? -moveSpeed : moveSpeed;
-    this.y += this.y > this.targetY ? -moveSpeed : moveSpeed;
-    if(Math.abs(this.x - this.targetX) < moveSpeed) {
-      this.targetX = random(this.location < numCircles/2 ? -edgeOffset : windowWidth * 1.4 - widthPossible + edgeOffset, this.location < numCircles/2 ? widthPossible - edgeOffset : windowWidth * 1.4 + edgeOffset);
-    }
-    if(Math.abs(this.y - this.targetY) < moveSpeed) {
-      this.targetY = random(height);
-    }
-  }
-  display() {
-    fill(lerpColor(colors[Math.trunc(this.currColor)], colors[Math.trunc(this.currColor) + 1], this.currColor - Math.trunc(this.currColor)));
-    ellipse(this.x, this.y, this.diameter, this.diameter);
-  }
-}
-</script>
-  <script>
-var isMuted = false;
-var hoverSound = 'https://drive.google.com/uc?id=14WrkkT2B934DkjhJJDI4isvAlR8yOxIq';
-    window.onload = function() {
-        var anchors = document.getElementsByTagName('*');
-        for(var i = 0; i < anchors.length; i++) {
-            var anchor = anchors[i];
-            anchor.onclick = function() {
-                code = this.getAttribute('whenClicked');
-                eval(code);   
-            }
-        }
-        /*var hoverables = document.querySelectorAll('[hoverSound="true"]');
-        for(var i = 0; i < hoverables.length; i++) {
-            var hoverelement = hoverables[i];
-            hoverelement.addEventListener('mouseenter', (event) => {
-            			if(!isMuted) {
-  										var audio = new Audio(hoverSound);
-  										audio.play();
-  								}
-            });
-        }*/
-    }
-</script>
+  <script src="./scripts/gradient.js"></script>
+  <script src="./scripts/sound.js"></script>
   </style>
 </head>
 <body data-w-id="627b2651519efc4cb9337fde" class="body">
@@ -172,9 +22,6 @@ var hoverSound = 'https://drive.google.com/uc?id=14WrkkT2B934DkjhJJDI4isvAlR8yOx
       <style>
 .cursorwrap {
     pointer-events: none;
-}
-body, a {
-    cursor: none;
 }
 .cursormaskdiv {
 	transition-duration: 0.4s;
@@ -212,7 +59,7 @@ body, a {
     </div>
   </div>
   <div class="masterbgwrap"></div>
-  <div data-w-id="cc6bc25b-702d-9f18-f5ea-595b41537230" class="section confirmation">
+  <!-- <div data-w-id="cc6bc25b-702d-9f18-f5ea-595b41537230" class="section confirmation">
     <div data-w-id="65f80451-7a33-517c-e62f-d2d678fa67ef" style="-webkit-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="preloaderbg2"></div>
     <div data-w-id="6c3bcd6c-bcb3-38a6-e427-4882a89d0451" style="-webkit-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="preloaderbg"></div>
     <div data-w-id="1ff79a55-9d53-30f6-d73f-1ab8bc8efc17" style="opacity:1" class="loadanimwrap">
@@ -229,7 +76,8 @@ body, a {
         <div class="ctabg"></div>
       </div>
     </div>
-  </div>
+  </div> -->
+  <!-- ABOVE DIV CASUING PROBS -->
   <div class="embed w-embed w-script"><audio class="bgsound" loop="">
       <source src="https://drive.google.com/uc?id=1C35R3eEtDuHGRjpJTuTuSZVKZcUtGQV5" type="audio/mpeg">
     </audio>
