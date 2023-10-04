@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!--  This site was created in Webflow. https://www.webflow.com  -->
+<!--  Last Published: Wed Oct 04 2023 12:38:43 GMT+0000 (Coordinated Universal Time)  -->
 <html data-wf-page="63d4aa1e6aee2601072a9d7a" data-wf-site="627b2651519efcbc7a337fdc">
 <head>
   <meta charset="utf-8">
@@ -12,8 +13,161 @@
   <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon">
   <link href="images/webclip.png" rel="apple-touch-icon">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.5.0/lib/p5.js"></script>
-  <script src="./scripts/gradient.js"></script>
-  <script src="./scripts/sound.js"></script>
+  <script>
+let bug; // Declare object
+var sizeSpeed = 0.3;
+var baseMoveSpeed = 0.5;
+var moveSpeed = 0.5;
+var numColors = 5;
+var baseColorSpeed = 0.005;
+var colorSpeed = 0.005;
+var edgeOffset;
+var widthPossible;
+var counter = 0;
+var cnv;
+var scrollingSpeed;
+var scrollMultiplier = 0.5;
+var colorMultiplier = 0.0025;
+var weightedSizes = [
+      { value: 250, weight: 1 },
+      { value: 300, weight: 2 },
+      { value: 400, weight: 3 },
+      { value: 500, weight: 2 },
+      { value: 600, weight: 1 }
+    ];
+var numCircles = 10;
+var bugs = [];
+var colors = [];
+// Define function used to find weights.
+function chooseWeighted(opts) {
+  // get sum of all the weights.
+  var sum = 0;
+  for(var j = 0; j < opts.length; j++) {
+   sum += opts[j].weight 
+  }
+  // now pick a random number between 0 and the sum of the weights
+  var ran = random(sum);
+  // loop through all the options until you find a weight that is greater
+  // or equal to the random number. Subtract weight from random num every time.
+  for( var i = 0; i < opts.length; i++){
+    var opt = opts[i];
+    if(opt.weight >= ran) {
+      return opt.value;
+    }
+    ran -= opt.weight;
+  }
+}
+function setup() {
+  cnv = createCanvas(windowWidth * 1.4, windowHeight);
+  cnv.parent("p5canvaswrap");
+  cnv.style('display', 'block');
+  cnv.style('pointer-events', 'none');
+  cnv.style('position', 'fixed');
+  cnv.style('left', windowWidth * -0.2 + 'px');
+  cnv.style('top', '0');
+  cnv.style('z-index', '-15');
+  cnv.style('filter', 'blur(11em)');
+  background("#0E0D0E");
+  noStroke();
+  colors.length = numColors + 1;
+  colors[0] = color('#223D99');
+  colors[1] = color('#4DA2D2');
+  colors[2] = color('#8036BB');
+  colors[3] = color('#6036BB');
+  colors[4] = color('#1EC1AE');
+  colors[5] = color('#20339B');
+  for(var i = 0; i < numCircles; i++) {
+    bugs.push(new Colorer());
+    counter++;
+  }
+  widthPossible = windowWidth * 1.4 * 0.15;
+  edgeOffset = windowWidth * 1.4 * 0.07;
+}
+function draw() {
+  background("#0E0D0E");
+  for(const i in bugs) {
+    bugs[i].move();
+    bugs[i].display();
+  }
+  var temp = baseMoveSpeed + (scrollingSpeed * scrollMultiplier);
+  var temp2 = baseColorSpeed + (scrollingSpeed * colorMultiplier);
+  moveSpeed = temp ? temp : baseMoveSpeed;
+  colorSpeed = temp2 ? temp2 : baseColorSpeed;
+  console.log(moveSpeed);
+}
+function windowResized() {
+  resizeCanvas(windowWidth * 1.4, windowHeight);
+  widthPossible = windowWidth * 1.4 * 0.15;
+  edgeOffset = windowWidth * 1.4 * 0.07;
+}
+function getRandom(min, max) {
+ 	return Math.floor(Math.random() * (max - min) ) + min;
+}
+// Jitter class
+class Colorer {
+  constructor() {
+    this.targetSize = chooseWeighted(weightedSizes);
+    this.currColor = random(1, 3);
+    this.y = random(height);
+    this.diameter = chooseWeighted(weightedSizes);
+    this.location = counter;
+    this.x = this.location < 5 ? 0 : windowWidth * 1.4;
+    console.log(this.x);
+    this.targetX = this.x + 5;
+    this.targetY = random(height);
+  }
+  move() {
+    this.diameter += this.diameter > this.targetSize ? -sizeSpeed : sizeSpeed;
+    if(this.currColor + colorSpeed >= numColors) {
+      this.currColor = 0;
+    }
+    this.currColor += colorSpeed;
+    if(Math.abs(this.diameter - this.targetSize) < sizeSpeed) {
+      this.targetSize = chooseWeighted(weightedSizes);
+    }
+    this.x += this.x > this.targetX ? -moveSpeed : moveSpeed;
+    this.y += this.y > this.targetY ? -moveSpeed : moveSpeed;
+    if(Math.abs(this.x - this.targetX) < moveSpeed) {
+      this.targetX = random(this.location < numCircles/2 ? -edgeOffset : windowWidth * 1.4 - widthPossible + edgeOffset, this.location < numCircles/2 ? widthPossible - edgeOffset : windowWidth * 1.4 + edgeOffset);
+    }
+    if(Math.abs(this.y - this.targetY) < moveSpeed) {
+      this.targetY = random(height);
+    }
+  }
+  display() {
+    fill(lerpColor(colors[Math.trunc(this.currColor)], colors[Math.trunc(this.currColor) + 1], this.currColor - Math.trunc(this.currColor)));
+    ellipse(this.x, this.y, this.diameter, this.diameter);
+  }
+}
+</script>
+  <script>
+var isMuted = false;
+var hoverSound = 'https://drive.google.com/uc?id=14WrkkT2B934DkjhJJDI4isvAlR8yOxIq';
+    window.onload = function() {
+        var anchors = document.getElementsByTagName('*');
+        for(var i = 0; i < anchors.length; i++) {
+            var anchor = anchors[i];
+            anchor.onclick = function() {
+                code = this.getAttribute('whenClicked');
+                eval(code);   
+            }
+        }
+        /*var hoverables = document.querySelectorAll('[hoverSound="true"]');
+        for(var i = 0; i < hoverables.length; i++) {
+            var hoverelement = hoverables[i];
+            hoverelement.addEventListener('mouseenter', (event) => {
+            			if(!isMuted) {
+  										var audio = new Audio(hoverSound);
+  										audio.play();
+  								}
+            });
+        }*/
+    }
+</script>
+  <style>
+  .preloaderbg {
+  pointer-events none;
+  }
   </style>
 </head>
 <body data-w-id="627b2651519efc4cb9337fde" class="body">
@@ -22,6 +176,9 @@
       <style>
 .cursorwrap {
     pointer-events: none;
+}
+body, a {
+    cursor: none;
 }
 .cursormaskdiv {
 	transition-duration: 0.4s;
@@ -48,6 +205,13 @@
       <div class="cursorimgsmall"></div>
     </div>
   </div>
+  <div data-w-id="e68bb77c-7fe1-aee0-e235-e74a51a56871" class="section preloader">
+    <div data-w-id="e68bb77c-7fe1-aee0-e235-e74a51a56872" class="preloaderbg2"></div>
+    <div data-w-id="e68bb77c-7fe1-aee0-e235-e74a51a56873" class="preloaderbg"></div>
+    <div data-w-id="e68bb77c-7fe1-aee0-e235-e74a51a56874" class="loadanimwrap">
+      <div class="loaderlottie" data-w-id="e68bb77c-7fe1-aee0-e235-e74a51a56875" data-animation-type="lottie" data-src="documents/98770-assistagro-loading-bars.json" data-loop="0" data-direction="1" data-autoplay="1" data-is-ix2-target="0" data-renderer="svg" data-default-duration="0.8" data-duration="0"></div>
+    </div>
+  </div>
   <div class="gridwrap white">
     <div class="gridouter">
       <div class="gridinner"><img src="images/grid.svg" loading="lazy" alt="" class="gridimg"></div>
@@ -59,7 +223,7 @@
     </div>
   </div>
   <div class="masterbgwrap"></div>
-  <!-- <div data-w-id="cc6bc25b-702d-9f18-f5ea-595b41537230" class="section confirmation">
+  <div data-w-id="cc6bc25b-702d-9f18-f5ea-595b41537230" class="section confirmation">
     <div data-w-id="65f80451-7a33-517c-e62f-d2d678fa67ef" style="-webkit-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="preloaderbg2"></div>
     <div data-w-id="6c3bcd6c-bcb3-38a6-e427-4882a89d0451" style="-webkit-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 0, 0) scale3d(null, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="preloaderbg"></div>
     <div data-w-id="1ff79a55-9d53-30f6-d73f-1ab8bc8efc17" style="opacity:1" class="loadanimwrap">
@@ -76,8 +240,7 @@
         <div class="ctabg"></div>
       </div>
     </div>
-  </div> -->
-  <!-- ABOVE DIV CASUING PROBS -->
+  </div>
   <div class="embed w-embed w-script"><audio class="bgsound" loop="">
       <source src="https://drive.google.com/uc?id=1C35R3eEtDuHGRjpJTuTuSZVKZcUtGQV5" type="audio/mpeg">
     </audio>
@@ -213,7 +376,7 @@ const grain = new Grain(el);
     background-color: rgba(255, 255, 255, 0.15);
     border-radius: 0.15em;
 }
-.section {
+.section [
 	overflow-x: hidden;
 }
 .preloaderbg, .preloaderbg2, .shieldwrap {
@@ -258,7 +421,7 @@ const grain = new Grain(el);
           </div>
           <div data-w-id="ecf2c98b-2633-e5fd-18a6-71c258149d9e" class="navlinksblock">
             <div class="w-layout-blockcontainer nav-cluster left w-container">
-              <a data-w-id="ecf2c98b-2633-e5fd-18a6-71c258149d9f" href="#" class="navlinkblock w-inline-block">
+              <a data-w-id="ecf2c98b-2633-e5fd-18a6-71c258149d9f" href="work-new.html" class="navlinkblock w-inline-block">
                 <div class="navlinkbg"></div>
                 <div class="navlinkwrap">
                   <h1 class="heading is--black">Work</h1>
@@ -270,27 +433,21 @@ const grain = new Grain(el);
                       <div class="navlinkleft">
                         <h1 class="heading is--nowrap">Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work</h1>
                       </div>
-                      <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work</h1>
-                      </div>
                     </div>
                   </div>
                 </div>
               </a>
-              <a data-w-id="ecf2c98b-2633-e5fd-18a6-71c258149db0" href="about.html" class="navlinkblock w-inline-block">
+              <a data-w-id="ecf2c98b-2633-e5fd-18a6-71c258149db0" href="services.html" class="navlinkblock w-inline-block">
                 <div class="navlinkbg"></div>
                 <div class="navlinkwrap">
-                  <div class="paragraphsmall">(Leading Thoughts)</div>
-                  <h1 class="heading is--black">Expertise</h1>
+                  <div class="paragraphsmall">(cutting edge)</div>
+                  <h1 class="heading is--black">Services</h1>
                 </div>
                 <div class="navlinkinnerwrap">
                   <div class="navlinkouter">
                     <div class="navlinkinner">
                       <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">About About About About About About About About About About About About About About About About</h1>
-                      </div>
-                      <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">About About About About About About About About About About About About About About About About</h1>
+                        <h1 class="heading is--nowrap">Expertise Expertise Expertise Expertise</h1>
                       </div>
                     </div>
                   </div>
@@ -306,10 +463,7 @@ const grain = new Grain(el);
                   <div class="navlinkouter">
                     <div class="navlinkinner">
                       <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">Team Team Team Team Team Team Team Team Team Team Team Team Team Team Team Team</h1>
-                      </div>
-                      <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">Team Team Team Team Team Team Team Team Team Team Team Team Team Team Team Team</h1>
+                        <h1 class="heading is--nowrap">About About About About About About About About About About About About About About About About</h1>
                       </div>
                     </div>
                   </div>
@@ -317,7 +471,7 @@ const grain = new Grain(el);
               </a>
             </div>
             <div class="w-layout-blockcontainer nav-cluster right w-container">
-              <a data-w-id="0a4030cd-376b-8fc5-c0aa-3bbebd50d3b0" href="#" class="navlinkblock w-inline-block">
+              <a data-w-id="0a4030cd-376b-8fc5-c0aa-3bbebd50d3b0" href="blogs.html" class="navlinkblock w-inline-block">
                 <div class="navlinkbg"></div>
                 <div class="navlinkwrap">
                   <h1 class="heading is--black">Blogs</h1>
@@ -327,16 +481,13 @@ const grain = new Grain(el);
                   <div class="navlinkouter">
                     <div class="navlinkinner">
                       <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work</h1>
-                      </div>
-                      <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work Work</h1>
+                        <h1 class="heading is--nowrap">Blogs Blogs Blogs Blogs</h1>
                       </div>
                     </div>
                   </div>
                 </div>
               </a>
-              <a data-w-id="0a4030cd-376b-8fc5-c0aa-3bbebd50d3c0" href="about.html" class="navlinkblock w-inline-block">
+              <a data-w-id="0a4030cd-376b-8fc5-c0aa-3bbebd50d3c0" href="careers.html" class="navlinkblock w-inline-block">
                 <div class="navlinkbg"></div>
                 <div class="navlinkwrap">
                   <div class="paragraphsmall">(Leading Thoughts)</div>
@@ -346,10 +497,7 @@ const grain = new Grain(el);
                   <div class="navlinkouter">
                     <div class="navlinkinner">
                       <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">About About About About About About About About About About About About About About About About</h1>
-                      </div>
-                      <div class="navlinkleft">
-                        <h1 class="heading is--nowrap">About About About About About About About About About About About About About About About About</h1>
+                        <h1 class="heading is--nowrap">Careers Careers Careers</h1>
                       </div>
                     </div>
                   </div>
@@ -511,33 +659,31 @@ const grain = new Grain(el);
         <div class="headingline two hero">
           <div class="p hero-desc">(GMT +5:30)</div>
           <div class="heading">Crafting</div>
-          <div data-w-id="c100bc27-d009-d775-e066-a8ea35a8eefb" class="inlinepillwrap"><img src="images/Autopilot_Gradient.png" loading="lazy" data-w-id="c100bc27-d009-d775-e066-a8ea35a8eefc" sizes="(max-width: 479px) 2vw, 7vw" alt="" srcset="images/Autopilot_Gradient-p-500.png 500w, images/Autopilot_Gradient.png 500w" class="inlineimage__pill"></div>
+          <div data-w-id="c100bc27-d009-d775-e066-a8ea35a8eefb" class="inlinepillwrap aspect-1-1"><img src="images/Autopilot_Gradient.png" loading="lazy" data-w-id="c100bc27-d009-d775-e066-a8ea35a8eefc" sizes="(max-width: 479px) 100vw, (max-width: 767px) 35.546875px, (max-width: 991px) 13vw, 100vw" alt="" srcset="images/Autopilot_Gradient-p-500.png 500w, images/Autopilot_Gradient.png 500w" class="inlineimage__pill"></div>
           <div class="heading">Perfection</div>
         </div>
         <div class="headingline two hero">
           <div class="heading">with</div>
-          <div data-w-id="f0e62426-4ea5-1943-37fb-ea730efa3dbb" class="inlinecirclewrap"><img src="images/09.png" loading="lazy" sizes="(max-width: 767px) 100vw, (max-width: 991px) 8vw, 7vw" srcset="images/09-p-500.png 500w, images/09.png 500w" alt="" class="inlineimage__round footer"></div>
+          <div data-w-id="f0e62426-4ea5-1943-37fb-ea730efa3dbb" class="inlinecirclewrap"><img src="images/09.png" loading="lazy" sizes="(max-width: 479px) 100vw, (max-width: 767px) 58.015625px, (max-width: 991px) 10vw, 100vw" srcset="images/09-p-500.png 500w, images/09.png 500w" alt="" class="inlineimage__round aspect-1-1"></div>
           <div class="heading">Pleasure</div>
           <div class="p hero-desc">(DIGITAL EXPERIENCE DESIGN)<br>(BRANDING &amp; STRATEGY)<br>(MOTION DESIGN)</div>
         </div>
         <div class="w-layout-vflex clsue">
           <p class="p hero">Elevating Brands at India’s most Design Forward Branding &amp; Strategy Agency.</p>
-          <div class="heroctawrap">
-            <a href="https://cal.com/vishal-autopilot/brand-discovery" hoversound="true" data-w-id="ccbaf63c-6bd6-0250-40f4-beaa962f1fa1" target="_blank" class="ctabutton w-inline-block">
-              <div class="ctaouterwrap">
-                <div class="ctatextwrap">
-                  <div class="ctatextinner">
-                    <div class="ctatext">SCHEDULE A MISSION</div>
-                    <div class="ctatext">SCHEDULE A MISSION</div>
-                  </div>
+          <a href="https://cal.com/vishal-autopilot/brand-discovery" hoversound="true" data-w-id="ccbaf63c-6bd6-0250-40f4-beaa962f1fa1" target="_blank" class="ctabutton her-mission w-inline-block">
+            <div class="ctaouterwrap">
+              <div class="ctatextwrap">
+                <div class="ctatextinner">
+                  <div class="ctatext">SCHEDULE A MISSION</div>
+                  <div class="ctatext">SCHEDULE A MISSION</div>
                 </div>
-                <div class="ctaiconwrap">
-                  <div class="ctaiconinner"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"></div>
-                </div>
-                <div class="ctabg"></div>
               </div>
-            </a>
-          </div>
+              <div class="ctaiconwrap">
+                <div class="ctaiconinner"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"></div>
+              </div>
+              <div class="ctabg"></div>
+            </div>
+          </a>
         </div>
       </div>
     </div>
@@ -566,9 +712,9 @@ const grain = new Grain(el);
   <div class="section works">
     <div class="container is--flexibleheight w-container">
       <div class="worksimagesection">
-        <div data-w-id="faa6ea21-59d7-f0f1-efaf-0a006bbaea10" class="worksimagewrap one"><img src="images/Wall_BimaKavach_Autopilot_OP.jpg" loading="lazy" sizes="(max-width: 479px) 86vw, 24vw" srcset="images/Wall_BimaKavach_Autopilot_OP-p-500.jpg 500w, images/Wall_BimaKavach_Autopilot_OP-p-800.jpg 800w, images/Wall_BimaKavach_Autopilot_OP-p-1080.jpg 1080w, images/Wall_BimaKavach_Autopilot_OP.jpg 1500w" alt="" class="landingcaseimage"></div>
-        <div data-w-id="190eb49a-a149-bcba-3d47-5a7e3fbcf2ca" class="worksimagewrap"><img src="images/Buyogo_Building_Autopilot.png" loading="lazy" sizes="(max-width: 479px) 86vw, 24vw" srcset="images/Buyogo_Building_Autopilot-p-500.png 500w, images/Buyogo_Building_Autopilot-p-800.png 800w, images/Buyogo_Building_Autopilot-p-1080.png 1080w, images/Buyogo_Building_Autopilot-p-1600.png 1600w, images/Buyogo_Building_Autopilot.png 1920w" alt="" class="landingcaseimage"></div>
-        <div data-w-id="6898e791-6c05-9ab3-6505-3d871571671c" class="worksimagewrap"><img src="images/Hoodie_Little_Heights_Autopilot_OP.jpg" loading="lazy" sizes="(max-width: 479px) 86vw, 24vw" srcset="images/Hoodie_Little_Heights_Autopilot_OP-p-500.jpg 500w, images/Hoodie_Little_Heights_Autopilot_OP-p-800.jpg 800w, images/Hoodie_Little_Heights_Autopilot_OP-p-1080.jpg 1080w, images/Hoodie_Little_Heights_Autopilot_OP.jpg 1155w" alt="" class="landingcaseimage"></div>
+        <div data-w-id="faa6ea21-59d7-f0f1-efaf-0a006bbaea10" class="worksimagewrap one"><img src="images/Wall_BimaKavach_Autopilot_OP.jpg" loading="lazy" sizes="(max-width: 479px) 100vw, 30vw" srcset="images/Wall_BimaKavach_Autopilot_OP-p-500.jpg 500w, images/Wall_BimaKavach_Autopilot_OP-p-800.jpg 800w, images/Wall_BimaKavach_Autopilot_OP-p-1080.jpg 1080w, images/Wall_BimaKavach_Autopilot_OP.jpg 1500w" alt="" class="landingcaseimage"></div>
+        <div data-w-id="190eb49a-a149-bcba-3d47-5a7e3fbcf2ca" class="worksimagewrap"><img src="images/Buyogo_Building_Autopilot.png" loading="lazy" sizes="(max-width: 479px) 100vw, 30vw" srcset="images/Buyogo_Building_Autopilot-p-500.png 500w, images/Buyogo_Building_Autopilot-p-800.png 800w, images/Buyogo_Building_Autopilot-p-1080.png 1080w, images/Buyogo_Building_Autopilot-p-1600.png 1600w, images/Buyogo_Building_Autopilot.png 1920w" alt="" class="landingcaseimage"></div>
+        <div data-w-id="6898e791-6c05-9ab3-6505-3d871571671c" class="worksimagewrap"><img src="images/Hoodie_Little_Heights_Autopilot_OP.jpg" loading="lazy" sizes="(max-width: 479px) 100vw, 30vw" srcset="images/Hoodie_Little_Heights_Autopilot_OP-p-500.jpg 500w, images/Hoodie_Little_Heights_Autopilot_OP-p-800.jpg 800w, images/Hoodie_Little_Heights_Autopilot_OP-p-1080.jpg 1080w, images/Hoodie_Little_Heights_Autopilot_OP.jpg 1155w" alt="" class="landingcaseimage"></div>
         <div class="workstitleblock">
           <div class="workstitlewrap">
             <div class="paragraphbig">PEDESTRIAN</div>
@@ -718,9 +864,9 @@ const grain = new Grain(el);
     </div>
   </div>
   <div class="section allworks">
-    <div data-w-id="958974d4-e455-0d43-4416-57dc240024cc" class="allworksblock">
+    <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b215d" class="allworksblock">
       <div class="paragraphbig is--paddingbottom">Other Projects</div>
-      <a hoversound="true" data-w-id="1724dfec-9a56-2ad4-8f9a-8329192c3142" href="stockants.html" class="workblock w-inline-block">
+      <a hoversound="true" data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b2160" href="stockants.html" class="workblock w-inline-block">
         <div class="worksbg"></div>
         <div class="headingouterwrap">
           <h1 class="project-page-head is--autowidth">StockAnts</h1>
@@ -756,14 +902,14 @@ const grain = new Grain(el);
             </div>
             <div class="workpillswrap">
               <div class="pillsrow">
-                <div data-w-id="7eb88a8f-c808-622e-a5b6-97f4ed57d095" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b2196" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">BRANDING</div>
                     <div class="pilltext">BRANDING</div>
                   </div>
                   <div class="pillfill"></div>
                 </div>
-                <div data-w-id="7eb88a8f-c808-622e-a5b6-97f4ed57d09c" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b219d" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">UX DESIGN</div>
                     <div class="pilltext">UX DESIGN</div>
@@ -775,7 +921,7 @@ const grain = new Grain(el);
           </div>
           <div class="workpillswrap">
             <div class="pillsrow">
-              <div data-w-id="9c6526fc-018b-704e-6702-1df6d61362a3" class="pillouter is--black">
+              <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b21a6" class="pillouter is--black">
                 <div class="pillinner">
                   <div class="pilltext">UX DESIGN</div>
                   <div class="pilltext">UX DESIGN</div>
@@ -787,7 +933,7 @@ const grain = new Grain(el);
         </div>
         <div class="paragraphsmall wide">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum orci dolor, tincidunt vitae tortor ac, bibendum dictum est. Pellentesque tempus velit quam, eu scelerisque est tincidunt sed.</div>
       </a>
-      <a hoversound="true" data-w-id="3606591f-b22c-a8e3-872f-a7ce1edaf9f5" href="minny.html" class="workblock w-inline-block">
+      <a hoversound="true" data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b21af" href="minny.html" class="workblock w-inline-block">
         <div class="worksbg"></div>
         <div class="headingouterwrap">
           <h1 class="project-page-head is--autowidth">Minny</h1>
@@ -823,14 +969,14 @@ const grain = new Grain(el);
             </div>
             <div class="workpillswrap">
               <div class="pillsrow">
-                <div data-w-id="3606591f-b22c-a8e3-872f-a7ce1edafa2b" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b21e5" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">BRANDING</div>
                     <div class="pilltext">BRANDING</div>
                   </div>
                   <div class="pillfill"></div>
                 </div>
-                <div data-w-id="3606591f-b22c-a8e3-872f-a7ce1edafa32" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b21ec" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">UX DESIGN</div>
                     <div class="pilltext">UX DESIGN</div>
@@ -842,7 +988,7 @@ const grain = new Grain(el);
           </div>
           <div class="workpillswrap">
             <div class="pillsrow">
-              <div data-w-id="3606591f-b22c-a8e3-872f-a7ce1edafa3b" class="pillouter is--black">
+              <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b21f5" class="pillouter is--black">
                 <div class="pillinner">
                   <div class="pilltext">BRANDING</div>
                   <div class="pilltext">BRANDING</div>
@@ -854,7 +1000,7 @@ const grain = new Grain(el);
         </div>
         <div class="paragraphsmall wide">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum orci dolor, tincidunt vitae tortor ac, bibendum dictum est. Pellentesque tempus velit quam, eu scelerisque est tincidunt sed.</div>
       </a>
-      <a hoversound="true" data-w-id="2cb1eaac-326d-43ff-fa53-917b23d75d21" href="#" class="workblock w-inline-block">
+      <a hoversound="true" data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b21fe" href="#" class="workblock w-inline-block">
         <div class="worksbg"></div>
         <div class="headingouterwrap">
           <h1 class="project-page-head is--autowidth">Treatos</h1>
@@ -890,14 +1036,14 @@ const grain = new Grain(el);
             </div>
             <div class="workpillswrap">
               <div class="pillsrow">
-                <div data-w-id="2cb1eaac-326d-43ff-fa53-917b23d75d57" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b2234" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">BRANDING</div>
                     <div class="pilltext">BRANDING</div>
                   </div>
                   <div class="pillfill"></div>
                 </div>
-                <div data-w-id="2cb1eaac-326d-43ff-fa53-917b23d75d5e" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b223b" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">UX DESIGN</div>
                     <div class="pilltext">UX DESIGN</div>
@@ -909,14 +1055,14 @@ const grain = new Grain(el);
           </div>
           <div class="workpillswrap">
             <div class="pillsrow">
-              <div data-w-id="2cb1eaac-326d-43ff-fa53-917b23d75d67" class="pillouter is--black">
+              <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b2244" class="pillouter is--black">
                 <div class="pillinner">
                   <div class="pilltext">BRANDING</div>
                   <div class="pilltext">BRANDING</div>
                 </div>
                 <div class="pillfill"></div>
               </div>
-              <div data-w-id="2cb1eaac-326d-43ff-fa53-917b23d75d6e" class="pillouter is--black">
+              <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b224b" class="pillouter is--black">
                 <div class="pillinner">
                   <div class="pilltext">UX DESIGN</div>
                   <div class="pilltext">UX DESIGN</div>
@@ -928,7 +1074,7 @@ const grain = new Grain(el);
         </div>
         <div class="paragraphsmall wide">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum orci dolor, tincidunt vitae tortor ac, bibendum dictum est. Pellentesque tempus velit quam, eu scelerisque est tincidunt sed.</div>
       </a>
-      <a hoversound="true" data-w-id="508a6f29-9508-71f2-29ba-3c2d834b348b" href="#" class="workblock w-inline-block">
+      <a hoversound="true" data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b2254" href="#" class="workblock w-inline-block">
         <div class="worksbg"></div>
         <div class="headingouterwrap">
           <h1 class="project-page-head is--autowidth">Wings</h1>
@@ -964,14 +1110,14 @@ const grain = new Grain(el);
             </div>
             <div class="workpillswrap">
               <div class="pillsrow">
-                <div data-w-id="508a6f29-9508-71f2-29ba-3c2d834b34c1" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b228a" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">BRANDING</div>
                     <div class="pilltext">BRANDING</div>
                   </div>
                   <div class="pillfill"></div>
                 </div>
-                <div data-w-id="508a6f29-9508-71f2-29ba-3c2d834b34c8" class="pillouter is--black">
+                <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b2291" class="pillouter is--black">
                   <div class="pillinner">
                     <div class="pilltext">UX DESIGN</div>
                     <div class="pilltext">UX DESIGN</div>
@@ -983,7 +1129,7 @@ const grain = new Grain(el);
           </div>
           <div class="workpillswrap">
             <div class="pillsrow">
-              <div data-w-id="508a6f29-9508-71f2-29ba-3c2d834b34d8" class="pillouter is--black">
+              <div data-w-id="3342af96-8d7f-0b79-dfcf-8e8ebf3b229a" class="pillouter is--black">
                 <div class="pillinner">
                   <div class="pilltext">MOTION DESIGN</div>
                   <div class="pilltext">MOTION DESIGN</div>
@@ -997,6 +1143,34 @@ const grain = new Grain(el);
       </a>
     </div>
   </div>
+  <div class="w-layout-blockcontainer container-4 w-container">
+    <section class="values-home">
+      <div class="w-layout-vflex values left">
+        <h1 class="h2">Our Values</h1>
+        <p class="p">Our multi-skilled teams have a depth of experience in both designing and deploying digital projects at scale.</p><img src="images/Mobile_Mockups_Hands_StockAnts_Autopilot.jpg" loading="lazy" sizes="(max-width: 479px) 100vw, (max-width: 767px) 67vw, (max-width: 991px) 74vw, 75vw" srcset="images/Mobile_Mockups_Hands_StockAnts_Autopilot-p-500.jpg 500w, images/Mobile_Mockups_Hands_StockAnts_Autopilot-p-800.jpg 800w, images/Mobile_Mockups_Hands_StockAnts_Autopilot-p-1080.jpg 1080w, images/Mobile_Mockups_Hands_StockAnts_Autopilot.jpg 1485w" alt="" class="landingcaseimage">
+      </div>
+      <div class="w-layout-vflex values right">
+        <h4 class="h4">STRATEGY &amp; DATA</h4>
+        <p class="p">Brand Strategy<br>Market Discovery<br>Brand Positioning<br>Content Strategy<br>User Research<br>Product Testing</p>
+        <div class="cta-wrapper">
+          <a hoversound="true" data-w-id="1f0fc86b-b12e-e0cd-34a1-b3727f76d10c" href="expertise.html" class="ctabutton expertise w-inline-block">
+            <div class="ctaouterwrap">
+              <div class="ctatextwrap">
+                <div class="ctatextinner">
+                  <div class="ctatext">LEARN MORE</div>
+                  <div class="ctatext">LEARN MORE</div>
+                </div>
+              </div>
+              <div class="ctaiconwrap">
+                <div class="ctaiconinner"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"></div>
+              </div>
+              <div class="ctabg"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
   <div class="instinct">
     <div class="instinct-wrapper w-container">
       <div class="w-layout-blockcontainer instinct-top w-container">
@@ -1005,24 +1179,25 @@ const grain = new Grain(el);
       </div>
       <h1 class="instinct-header">Autopilot</h1>
       <div class="w-layout-blockcontainer instinct-bottom w-container">
-        <p class="p instinct-bottom">We prioritize the “wow!” in practical design innovations to combat real-world problems. Aligning our vision to yours to ensure good businesses don’t fail despite their impact.</p>
+        <p class="p instinct-bottom upar">We prioritize the “wow!” in practical design innovations to combat real-world problems. Aligning our vision to yours to ensure good businesses don’t fail despite their impact.</p>
+        <p class="p instinct-bottom">The Autopilot instinct is our team&#x27;s collective wisdom and experiences from their unique world views. The Instinct drives us from insight to action, enabling businesses make confident and accurate decisions in high-stakes situations.</p>
         <h1 class="heading-2">Instinct</h1>
       </div>
-    </div>
-    <a hoversound="true" data-w-id="164658aa-668d-c6d0-ba43-3990b47ed280" href="expertise.html" class="ctabutton w-inline-block">
-      <div class="ctaouterwrap">
-        <div class="ctatextwrap">
-          <div class="ctatextinner">
-            <div class="ctatext">LEARN MORE </div>
-            <div class="ctatext">LEARN MORE </div>
+      <a hoversound="true" data-w-id="164658aa-668d-c6d0-ba43-3990b47ed280" href="expertise.html" class="ctabutton w-inline-block">
+        <div class="ctaouterwrap">
+          <div class="ctatextwrap">
+            <div class="ctatextinner">
+              <div class="ctatext">LEARN MORE </div>
+              <div class="ctatext">LEARN MORE </div>
+            </div>
           </div>
+          <div class="ctaiconwrap">
+            <div class="ctaiconinner"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"></div>
+          </div>
+          <div class="ctabg"></div>
         </div>
-        <div class="ctaiconwrap">
-          <div class="ctaiconinner"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"><img src="images/arrow_cta.svg" loading="lazy" alt="" class="ctaiconimg"></div>
-        </div>
-        <div class="ctabg"></div>
-      </div>
-    </a>
+      </a>
+    </div>
     <div id="p5canvaswrap" class="canvaswrap"></div>
   </div>
   <div class="section footer">
@@ -1041,7 +1216,7 @@ const grain = new Grain(el);
             <div class="formblock w-form">
               <form id="wf-form-Contact-Form" name="wf-form-Contact-Form" data-name="Contact Form" method="get" class="form" data-wf-page-id="63d4aa1e6aee2601072a9d7a" data-wf-element-id="b53c0d9a-39ac-af74-d1cb-e164efebf35e">
                 <div class="p footer">Get a free consultation call to settle all of your questions.</div>
-                <a hoversound="true" data-w-id="b53c0d9a-39ac-af74-d1cb-e164efebf361" href="https://cal.com/vishal-autopilot/brand-discovery" target="_blank" class="ctabutton w-inline-block"><input type="submit" value="Submit" data-wait="Please wait..." class="submitbutton w-button">
+                <a hoversound="true" data-w-id="b53c0d9a-39ac-af74-d1cb-e164efebf361" href="https://cal.com/vishal-autopilot/brand-discovery" target="_blank" class="ctabutton footer w-inline-block"><input type="submit" value="Submit" data-wait="Please wait..." class="submitbutton w-button">
                   <div class="ctaouterwrap is--black">
                     <div class="ctatextwrap">
                       <div class="ctatextinner">
@@ -1103,7 +1278,7 @@ const grain = new Grain(el);
               </div>
             </div>
           </div>
-          <div class="w-layout-blockcontainer footer-details w-container">
+          <div class="w-layout-blockcontainer footer-details bottom w-container">
             <h4 class="footer-desc-header">YOU REACHED THE END OF THE PAGE</h4>
             <a href="index.html" aria-current="page" class="footer-link underline hover w--current">BACK TO THE TOP</a>
           </div>
